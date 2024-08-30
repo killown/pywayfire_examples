@@ -49,13 +49,13 @@
       </div>
       <div class="mb-3">
         <label for="argsInput" class="form-label"
-          >Enter Arguments (JSON format):</label
+          >Enter Arguments (comma-separated):</label
         >
         <input
           type="text"
           class="form-control"
           id="argsInput"
-          placeholder='e.g., ["arg1", "arg2"]'
+          placeholder='e.g., 1, 2, "string"'
         />
       </div>
       <div class="d-grid gap-2">
@@ -71,35 +71,28 @@
       const argsInput = document.getElementById("argsInput");
       const sendButton = document.getElementById("sendButton");
 
-      socket.addEventListener("open", function (event) {
+      socket.addEventListener("open", function () {
         console.log("Connected to the server");
       });
 
       socket.addEventListener("message", function (event) {
-        console.log("Raw message from server:", event.data);
-
         let data;
         try {
           data = JSON.parse(event.data);
         } catch (e) {
-          console.error("Error parsing JSON:", e.message);
           outputDiv.innerHTML = `
           <p class="error">Error parsing message: ${e.message}</p>
-          <pre>${event.data}</pre>
-        `;
+          <pre>${event.data}</pre>`;
           return;
         }
-
         outputDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
       });
 
       socket.addEventListener("error", function (event) {
-        console.error("WebSocket error:", event);
-        outputDiv.innerHTML = `<p class="error">Error: ${event.message}</p>`;
+        outputDiv.innerHTML = `<p class="error">Error: ${event.message || 'WebSocket error'}</p>`;
       });
 
-      socket.addEventListener("close", function (event) {
-        console.log("WebSocket connection closed");
+      socket.addEventListener("close", function () {
         outputDiv.innerHTML = `<p>Connection closed</p>`;
       });
 
@@ -109,7 +102,7 @@
 
         if (command) {
           try {
-            const parsedArgs = args ? JSON.parse(args) : [];
+            const parsedArgs = parseArgs(args);
             const message = JSON.stringify({
               command: command,
               args: parsedArgs,
@@ -118,12 +111,27 @@
             commandInput.value = "";
             argsInput.value = "";
           } catch (e) {
-            alert("Invalid arguments format. Please use valid JSON.");
+            alert("Invalid arguments format. Please ensure you're using a valid format.");
           }
         } else {
           alert("Please enter a command");
         }
       });
+
+      function parseArgs(input) {
+        if (!input) return [];
+        return input.split(',').map(arg => {
+          arg = arg.trim();
+          if (arg === "true" || arg === "false") return arg === "true";
+          if (!isNaN(arg)) return Number(arg);
+          try {
+            return JSON.parse(arg); // For strings or other JSON-valid inputs
+          } catch {
+            return arg; // As a plain string
+          }
+        });
+      }
     </script>
   </body>
 </html>
+
