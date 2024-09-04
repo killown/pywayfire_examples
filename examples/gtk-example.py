@@ -7,6 +7,8 @@ class WayfireEventApp(Gtk.Application):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.sock = WayfireSocket()  # Initialize WayfireSocket
+        self.sock.watch(["event"])
+        GLib.io_add_watch(self.sock.client, GLib.IO_IN, self.on_event_ready)
         self.setup_event_watch()
         self.label = None
 
@@ -18,11 +20,6 @@ class WayfireEventApp(Gtk.Application):
         self.label = Gtk.Label(label="Waiting for events...")
         window.set_child(self.label)
         window.show()
-
-    def setup_event_watch(self):
-        self.sock.watch(["event"])
-        fd = self.sock.client.fileno()  # Get the file descriptor from the WayfireSocket instance
-        GLib.io_add_watch(fd, GLib.IO_IN, self.on_event_ready)
 
     def on_event_ready(self, fd, condition):
         # This function is called when the file descriptor is ready for reading
