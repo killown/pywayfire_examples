@@ -6,7 +6,7 @@ from wayfire import WayfireSocket
 class WayfireEventApp(Gtk.Application):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.sock = WayfireSocket()  # Initialize WayfireSocket
+        self.sock = WayfireSocket()
         self.sock.watch(["event"])
         GLib.io_add_watch(self.sock.client, GLib.IO_IN, self.on_event_ready)
         self.label = None
