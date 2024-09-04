@@ -9,7 +9,6 @@ class WayfireEventApp(Gtk.Application):
         self.sock = WayfireSocket()  # Initialize WayfireSocket
         self.sock.watch(["event"])
         GLib.io_add_watch(self.sock.client, GLib.IO_IN, self.on_event_ready)
-        self.setup_event_watch()
         self.label = None
 
     def do_activate(self):
