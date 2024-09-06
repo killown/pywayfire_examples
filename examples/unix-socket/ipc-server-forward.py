@@ -28,5 +28,5 @@ while True:
     except (socket.error, json.JSONDecodeError) as e:
         print(f"Error: {e}")
     finally:
-        conn.close()  # Close the connection when done
+        conn.close()
 
