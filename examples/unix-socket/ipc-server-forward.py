@@ -16,14 +16,14 @@ server_socket.listen()
 
 def handle_event(event, conn):
     serialized_event = json.dumps(event)
-    conn.sendall((serialized_event + '\n').encode())  # Convert JSON string to bytes
+    conn.sendall((serialized_event + '\n').encode())
 
 sock.watch()
 while True:
     conn, _ = server_socket.accept()
     try:
         while True:
-            event = sock.read_next_event()  # Get the event as a dictionary
+            event = sock.read_next_event()
             handle_event(event, conn)
     except (socket.error, json.JSONDecodeError) as e:
         print(f"Error: {e}")
