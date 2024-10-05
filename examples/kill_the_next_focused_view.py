@@ -6,10 +6,6 @@ sock = WayfireSocket()
 sock.watch()
 
 while True:
-    msg = sock.read_message()
-    if "event" in msg:
-        if 'view-focused' in msg['event']:
-            pid = msg['view']['pid']
-            print(f"Killing process with PID: {pid}")
-            os.kill(pid, signal.SIGTERM)
-            break
+    if (pid := (msg := sock.read_message()).get("view", {}).get("pid")) and msg.get("event") == 'view-focused':
+        os.kill(pid, signal.SIGTERM)
+        break
