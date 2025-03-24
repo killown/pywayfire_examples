@@ -10,7 +10,7 @@ def turn_off_output(sock, output_name="DP-2"):
     print(f"Turned off {output_name}.")
 
 
-def turn_on_output(sock, output_name="DP-2", mode="1920x1080@144000"):
+def turn_on_output(sock, output_name="DP-2", mode="auto"):
     """
     Turn on the specified output with the given mode.
     """
@@ -29,7 +29,7 @@ def get_output_state(sock, output_name="DP-2"):
     return "off" if mode == "off" or not mode else "on"
 
 
-def toggle_output(sock, output_name="DP-2", mode="1920x1080@144000"):
+def toggle_output(sock, output_name="DP-2", mode="auto"):
     """
     Toggle the output state (off if on, on if off).
     """
@@ -46,4 +46,4 @@ if __name__ == "__main__":
     sock = WayfireSocket()
 
     # Toggle the output state
-    toggle_output(sock, output_name="DP-2", mode="1920x1080@144000")
+    toggle_output(sock, output_name="DP-2")
