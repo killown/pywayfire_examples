@@ -1,6 +1,5 @@
 from wayfire import WayfireSocket
 from wayfire.extra.stipc import Stipc
-from wayfire.extra.ipc_utils import WayfireUtils
 
 sock = WayfireSocket()
 stipc = Stipc(sock)
