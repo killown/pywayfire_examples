@@ -1,8 +1,6 @@
 from wayfire import WayfireSocket
-from wayfire.extra.stipc import Stipc
 
 sock = WayfireSocket()
-stipc = Stipc(sock)
 
 
 def create_list_views(layout):
