@@ -4,7 +4,6 @@ from wayfire.extra.ipc_utils import WayfireUtils
 
 sock = WayfireSocket()
 stipc = Stipc(sock)
-utils = WayfireUtils(sock)
 
 
 def create_list_views(layout):
@@ -26,7 +25,7 @@ def create_list_views(layout):
 
 def maximize_focused_view():
     focused_view_id = sock.get_focused_view()["id"]
-    utils.set_view_maximized(focused_view_id)
+    sock.assign_slot(focused_view_id, "slot_c")
 
 
 sock.watch()
