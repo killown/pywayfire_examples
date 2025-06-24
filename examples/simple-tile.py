@@ -1,6 +1,10 @@
 from wayfire import WayfireSocket
+from wayfire.extra.stipc import Stipc
+from wayfire.extra.ipc_utils import WayfireUtils
 
 sock = WayfireSocket()
+stipc = Stipc(sock)
+utils = WayfireUtils(sock)
 
 
 def create_list_views(layout):
@@ -20,12 +24,24 @@ def create_list_views(layout):
     return list
 
 
+def maximize_focused_view():
+    focused_view_id = sock.get_focused_view()["id"]
+    utils.set_view_maximized(focused_view_id)
+
+
 sock.watch()
 while True:
     msg = sock.read_next_event()
-    if "event" in msg and "view-mapped" in msg["event"]:
+    if "event" not in msg:
+        continue
+
+    if "view-mapped" in msg["event"] or "view-tiled" in msg["event"]:
         view = msg["view"]
         if view["type"] == "toplevel" and view["parent"] == -1:
+            if msg["event"] == "view-tiled":
+                maximize_focused_view()
+                continue
+
             output = sock.get_output(view["output-id"])
             wset = output["wset-index"]
             wsx = output["workspace"]["x"]
@@ -59,8 +75,6 @@ while True:
                         {"view-id": view["id"], "weight": 1},
                     ]
                 }
-                print(desired_layout)
-
                 sock.set_tiling_layout(wset, wsx, wsy, desired_layout)
                 continue
 
