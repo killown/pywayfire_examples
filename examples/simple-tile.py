@@ -2,6 +2,8 @@ from wayfire import WayfireSocket
 
 sock = WayfireSocket()
 
+tiled = False
+
 
 def create_list_views(layout):
     if "view-id" in layout:
@@ -20,24 +22,21 @@ def create_list_views(layout):
     return list
 
 
-def maximize_focused_view():
-    focused_view_id = sock.get_focused_view()["id"]
-    sock.assign_slot(focused_view_id, "slot_c")
-
-
 sock.watch()
 while True:
     msg = sock.read_next_event()
     if "event" not in msg:
         continue
 
-    if "view-mapped" in msg["event"] or "view-tiled" in msg["event"]:
+    if "view-mapped" in msg["event"]:
+        focused_output = sock.get_focused_output()
+        focused_output_width = focused_output["geometry"]["width"]
         view = msg["view"]
+        view_width = view["geometry"]["width"]
+        if view_width > (focused_output_width / 2):
+            continue
+        focused_view = sock.get_focused_view()
         if view["type"] == "toplevel" and view["parent"] == -1:
-            if msg["event"] == "view-tiled":
-                maximize_focused_view()
-                continue
-
             output = sock.get_output(view["output-id"])
             wset = output["wset-index"]
             wsx = output["workspace"]["x"]
@@ -72,6 +71,7 @@ while True:
                     ]
                 }
                 sock.set_tiling_layout(wset, wsx, wsy, desired_layout)
+                tiled = True
                 continue
 
             stack = [{"view-id": v[0], "weight": v[2]} for v in stack_views_old]
@@ -89,5 +89,4 @@ while True:
                     {"weight": weight_others, "horizontal-split": stack},
                 ]
             }
-
             sock.set_tiling_layout(wset, wsx, wsy, desired_layout)
