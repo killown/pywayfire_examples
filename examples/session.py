@@ -32,6 +32,7 @@ try:
             pid = result.get("pid")
             if not pid:
                 continue
+            # very slow start just for testing
             time.sleep(3)
             new_views = [
                 v
