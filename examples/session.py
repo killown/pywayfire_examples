@@ -42,12 +42,18 @@ try:
                 continue
             new_view_id = new_views[0]["id"]
             geo = saved["geometry"]
+            output_id = saved["output_id"]
             ws = saved["workspace"]
             if saved["fullscreen"]:
                 sock.set_view_fullscreen(new_view_id, True)
             else:
                 sock.configure_view(
-                    new_view_id, geo["x"], geo["y"], geo["width"], geo["height"]
+                    new_view_id,
+                    geo["x"],
+                    geo["y"],
+                    geo["width"],
+                    geo["height"],
+                    output_id,
                 )
             sock.set_workspace(ws["x"], ws["y"], new_view_id)
 except sqlite3.OperationalError:
