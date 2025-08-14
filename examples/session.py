@@ -10,6 +10,8 @@ sock = WayfireSocket()
 stipc = Stipc(sock)
 utils = WayfireUtils(sock)
 
+time.sleep(10)
+
 
 def get_exe_path(pid):
     try:
@@ -33,7 +35,7 @@ try:
             if not pid:
                 continue
             # very slow start just for testing
-            time.sleep(3)
+            time.sleep(1)
             new_views = [
                 v
                 for v in sock.list_views()
@@ -43,20 +45,25 @@ try:
                 continue
             new_view_id = new_views[0]["id"]
             geo = saved["geometry"]
-            output_id = saved["output_id"]
+            output_id = saved["output-id"]
             ws = saved["workspace"]
-            if saved["fullscreen"]:
-                sock.set_view_fullscreen(new_view_id, True)
-            else:
-                sock.configure_view(
-                    new_view_id,
-                    geo["x"],
-                    geo["y"],
-                    geo["width"],
-                    geo["height"],
-                    output_id,
-                )
-            sock.set_workspace(ws["x"], ws["y"], new_view_id)
+            try:
+                if saved["fullscreen"]:
+                    sock.set_view_fullscreen(new_view_id, True)
+                else:
+                    sock.configure_view(
+                        new_view_id,
+                        geo["x"],
+                        geo["y"],
+                        geo["width"],
+                        geo["height"],
+                        output_id,
+                    )
+                sock.set_workspace(ws["x"], ws["y"], new_view_id)
+            except Exception as e:
+                print(e)
+            time.sleep(1)
+
 except sqlite3.OperationalError:
     pass
 
@@ -84,7 +91,7 @@ conn.commit()
 for row in conn.execute("SELECT view FROM views"):
     print(row[0])
 
-sock.watch(["view-mapped", "view-unmapped"])
+sock.watch(["view-mapped", "view-unmapped", "view-geometry-changed", "view-fullscreen"])
 
 while True:
     sock.read_next_event()
