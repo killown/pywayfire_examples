@@ -4,8 +4,8 @@ from wayfire.extra.stipc import Stipc
 import subprocess
 
 TIMEOUT_SECONDS = 1800
-SUSPEND_TIMEOUT_SECONDS = 7200  # Set to -1 to disable suspend
-POLL_INTERVAL_SECONDS = 1
+SUSPEND_TIMEOUT_SECONDS = 7200
+POLL_INTERVAL_SECONDS = 60
 
 
 def cursor_in_geometry(cursor, geometry):
@@ -34,6 +34,8 @@ def main():
                     "counter": 0,
                     "dpms_on": True,
                 }
+            else:
+                outputs_state[name]["geometry"] = data["geometry"]
 
         for name in list(outputs_state.keys()):
             if name not in current_outputs_info:
@@ -41,57 +43,42 @@ def main():
                     stipc.run_cmd(f"wlopm --on '{name}'")
                 del outputs_state[name]
 
-        for name, data in outputs_state.items():
-            if name in current_outputs_info:
-                data["geometry"] = current_outputs_info[name]["geometry"]
-
         cursor_pos = sock.get_cursor_position()
-        focused_output_info = sock.get_focused_output()
-        active_outputs_by_fullscreen = {
-            view["output-name"] for view in sock.list_views() if view.get("fullscreen")
-        }
-
-        for name, state in outputs_state.items():
-            if not state["dpms_on"]:  # monitor está off
-                if cursor_in_geometry(cursor_pos, state["geometry"]):
-                    stipc.run_cmd(f"wlopm --on '{name}'")
-                    state["dpms_on"] = True
-                    state["counter"] = 0
-
+        views = sock.list_views()
         any_output_active = False
 
         for name, state in outputs_state.items():
-            is_active_due_to_fullscreen = name in active_outputs_by_fullscreen
-
-            if is_active_due_to_fullscreen:
-                state["counter"] = 0
+            fullscreen_active = any(
+                v.get("fullscreen") and v.get("output-name") == name for v in views
+            )
+            if fullscreen_active:
                 if not state["dpms_on"]:
                     stipc.run_cmd(f"wlopm --on '{name}'")
                     state["dpms_on"] = True
+                state["counter"] = 0
                 any_output_active = True
                 continue
 
-            if focused_output_info and name == focused_output_info["name"]:
-                if last_cursor_pos == cursor_pos:
-                    state["counter"] += POLL_INTERVAL_SECONDS
-                else:
+            if state["dpms_on"]:
+                if last_cursor_pos != cursor_pos and cursor_in_geometry(
+                    cursor_pos, state["geometry"]
+                ):
                     state["counter"] = 0
                     any_output_active = True
-
-                if state["counter"] >= TIMEOUT_SECONDS and state["dpms_on"]:
+                else:
+                    state["counter"] += POLL_INTERVAL_SECONDS
+                if state["counter"] >= TIMEOUT_SECONDS:
                     stipc.run_cmd(f"wlopm --off '{name}'")
                     state["dpms_on"] = False
-                elif state["counter"] < TIMEOUT_SECONDS and not state["dpms_on"]:
-                    stipc.run_cmd(f"wlopm --on '{name}'")
-                    state["dpms_on"] = True
+                    state["counter"] = 0
             else:
-                state["counter"] += POLL_INTERVAL_SECONDS
-                if state["counter"] >= TIMEOUT_SECONDS and state["dpms_on"]:
-                    stipc.run_cmd(f"wlopm --off '{name}'")
-                    state["dpms_on"] = False
-                elif state["counter"] < TIMEOUT_SECONDS and not state["dpms_on"]:
+                if last_cursor_pos != cursor_pos and cursor_in_geometry(
+                    cursor_pos, state["geometry"]
+                ):
                     stipc.run_cmd(f"wlopm --on '{name}'")
                     state["dpms_on"] = True
+                    state["counter"] = 0
+                    any_output_active = True
 
         if any_output_active or cursor_pos != last_cursor_pos:
             global_inactivity_counter = 0
