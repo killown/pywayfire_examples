@@ -3,9 +3,18 @@ from wayfire import WayfireSocket
 from wayfire.extra.stipc import Stipc
 import subprocess
 
-TIMEOUT_SECONDS = 600
-SUSPEND_TIMEOUT_SECONDS = -1  # Set to -1 to disable suspend
+TIMEOUT_SECONDS = 1800
+SUSPEND_TIMEOUT_SECONDS = 7200  # Set to -1 to disable suspend
 POLL_INTERVAL_SECONDS = 1
+
+
+def cursor_in_geometry(cursor, geometry):
+    x, y = cursor
+    gx = int(geometry["x"])
+    gy = int(geometry["y"])
+    gw = int(geometry["width"])
+    gh = int(geometry["height"])
+    return gx <= x < gx + gw and gy <= y < gy + gh
 
 
 def main():
@@ -41,6 +50,13 @@ def main():
         active_outputs_by_fullscreen = {
             view["output-name"] for view in sock.list_views() if view.get("fullscreen")
         }
+
+        for name, state in outputs_state.items():
+            if not state["dpms_on"]:  # monitor está off
+                if cursor_in_geometry(cursor_pos, state["geometry"]):
+                    stipc.run_cmd(f"wlopm --on '{name}'")
+                    state["dpms_on"] = True
+                    state["counter"] = 0
 
         any_output_active = False
 
