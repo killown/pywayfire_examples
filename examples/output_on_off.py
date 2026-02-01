@@ -1,7 +1,7 @@
 from wayfire import WayfireSocket
 
 
-def turn_off_output(sock, output_name="DP-2"):
+def turn_off_output(sock, output_name="DP-1"):
     """
     Turn off the specified output.
     """
@@ -19,7 +19,7 @@ def turn_on_output(sock, output_name="DP-2", mode="auto"):
     print(f"Turned on {output_name} with mode {mode}.")
 
 
-def get_output_state(sock, output_name="DP-2"):
+def get_output_state(sock, output_name="DP-1"):
     """
     Get the current state of the output (on or off).
     """
@@ -29,7 +29,7 @@ def get_output_state(sock, output_name="DP-2"):
     return "off" if mode == "off" or not mode else "on"
 
 
-def toggle_output(sock, output_name="DP-2", mode="auto"):
+def toggle_output(sock, output_name="DP-1", mode="auto"):
     """
     Toggle the output state (off if on, on if off).
     """
@@ -46,4 +46,4 @@ if __name__ == "__main__":
     sock = WayfireSocket()
 
     # Toggle the output state
-    toggle_output(sock, output_name="DP-2")
+    toggle_output(sock, output_name="DP-1")

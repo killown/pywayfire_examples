@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Wayfire
+Exec=/home/neo/Scripts/wayfire/wayfire.sh
+TryExec=wayfire
+Icon=
+Type=Application
+X-DesktopNames=Wayfire;wlroots
