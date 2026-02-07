@@ -21,11 +21,8 @@ COORDINATES_Y = 1
 
 while True:
     msg = sock.read_next_event()
-
-    if msg and "view" in msg:
-        view_id = msg["view"]["id"]
-        sock.send_view_to_workspace(view_id, COORDINATES_X, COORDINATES_Y)
-
-        workspace_number = utils.get_workspace_number(COORDINATES_X, COORDINATES_Y)
-        print(f"Sending the app to workspace {workspace_number}")
-        sys.exit()
+    view_id = msg["view"]["id"]
+    sock.send_view_to_workspace(view_id, COORDINATES_X, COORDINATES_Y)
+    workspace_number = utils.get_workspace_number(COORDINATES_X, COORDINATES_Y)
+    print(f"Sending the app to workspace {workspace_number}")
+    sys.exit()
