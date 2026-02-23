@@ -9,6 +9,9 @@ Logic:
 
 import sys
 import time
+import shutil
+import os
+import signal
 from wayfire import WayfireSocket
 from wayfire.extra.stipc import Stipc
 
@@ -17,6 +20,12 @@ if len(sys.argv) < 2:
     sys.exit(1)
 
 app_cmd = sys.argv[1]
+
+# Resolve full path if it's not an absolute or relative path
+if not app_cmd.startswith(("/", "./", "../")):
+    full_path = shutil.which(app_cmd)
+    if full_path:
+        app_cmd = full_path
 
 sock = WayfireSocket()
 stipc = Stipc(sock)
@@ -35,6 +44,11 @@ while True:
     end_time = time.perf_counter()
 
     duration_ms = (end_time - start_time) * 1000
-    print(f"Startup Time: {duration_ms:.2f} ms")
-    print(f"View Info: {view.get('app-id')} - {view.get('title')}")
+    msg_text = f"Startup Time: {duration_ms:.2f} ms"
+    print(msg_text)
+
+    pid = view.get("pid")
+    if pid:
+        os.kill(pid, signal.SIGTERM)
+
     break
